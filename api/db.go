@@ -9,12 +9,11 @@ import (
 )
 
 func connectDB() *sql.DB {
-	time.Sleep(40000 * time.Millisecond)
+	time.Sleep(10000 * time.Millisecond)
 	db, err := sql.Open("postgres", "host=db port=5432 user=postgres password=postgres dbname=daylog sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	if err = db.Ping(); err != nil {
 		log.Fatal(err)
 	}

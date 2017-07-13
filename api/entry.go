@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -11,7 +10,8 @@ func entries(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get(":id")
 	rows, err := db.Query("SELECT entry.id, entry.description, entry.complete, entry.created_at, entry.goal_id FROM goal INNER JOIN entry ON goal.id = entry.goal_id WHERE goal.id=$1;", id)
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	var es []entry
 	for rows.Next() {
@@ -31,7 +31,8 @@ func entryOne(w http.ResponseWriter, r *http.Request) {
 	var e entry
 	err := row.Scan(&e.ID, &e.Description, &e.Complete, &e.CreatedAt, &e.GoalID)
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -48,7 +49,8 @@ func addEntry(w http.ResponseWriter, r *http.Request) {
 	var id string
 	err := db.QueryRow(q).Scan(&id)
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
@@ -60,7 +62,8 @@ func deleteEntry(w http.ResponseWriter, r *http.Request) {
 	q := fmt.Sprintf("DELETE FROM entry WHERE id=('%s');", eid)
 	_, err := db.Exec(q)
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
@@ -74,7 +77,8 @@ func updateEntry(w http.ResponseWriter, r *http.Request) {
 
 	_, err := db.Exec("UPDATE entry SET description=$1, complete=$2 where id=$3;", &e.Description, &e.Complete, eid)
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)

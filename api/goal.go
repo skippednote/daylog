@@ -10,7 +10,8 @@ import (
 func goals(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query("SELECT * FROM goal;")
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	var gs []goal
 	for rows.Next() {
@@ -47,6 +48,7 @@ func addGoal(w http.ResponseWriter, r *http.Request) {
 	var id string
 	err := db.QueryRow(q).Scan(&id)
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Fatal(err)
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -58,6 +60,7 @@ func deleteGoal(w http.ResponseWriter, r *http.Request) {
 	q := fmt.Sprintf("DELETE FROM goal WHERE id=%s;", id)
 	_, err := db.Exec(q)
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Fatal(err)
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -72,6 +75,7 @@ func updateGoal(w http.ResponseWriter, r *http.Request) {
 
 	_, err := db.Exec("UPDATE goal SET name=$1, complete=$2 where id=$3;", &g.Name, &g.Complete, id)
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Fatal(err)
 	}
 	w.Header().Set("Content-Type", "application/json")
